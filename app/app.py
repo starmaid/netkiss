@@ -32,28 +32,43 @@ def index():
 
 # API CALLS: not meant to be called by a browser
 
-@app.route('/api/startlistener', methods=['POST'])
+@app.route('/api/listener', methods=['POST'])
 def startListener():
     """
     Takes parameters, validates them, and starts a listener process
     User can then monitor the listener from the main page
+    
+    messagetype:
+        start
+        stop
     """
+    
     pass
 
 
-@app.route('/api/startsender', methods=['POST'])
+@app.route('/api/sender', methods=['POST'])
 def startSender():
     """
     Takes parameters, validates them, and starts a sender process
     User can then monitor the sender from the main page
+
+    messagetype:
+        start
+        stop
     """
     pass
 
 
-@app.route('/api/nodes', methods=['GET'])
+@app.route('/api/nodes', methods=['GET','POST'])
 def getNodes():
     """
+    GET:
     Returns list of known nodes
+
+    POST:
+    Called from a submission box. user has uploaded a key
+    Save this file as a new server or client or whatever
+    update config to keep track of it?
     """
     pass
 
@@ -66,14 +81,6 @@ def getNodeDetails(node_id):
     pass
 
 
-@app.route('/api/addnode', methods=['POST'])
-def addNode():
-    """
-    Called from a submission box. user has uploaded a key
-    Save this file as a new server or client or whatever
-    update config to keep track of it?
-    """
-    pass
 
 
 
