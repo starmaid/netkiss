@@ -13,20 +13,29 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/nodes')
-def index():
-    """
-    Details on known nodes, ability to add new node
-    """
-    return render_template('index.html')
-
-
 @app.route('/connections')
-def index():
+def connections():
     """
     Current connections, allows user to start new connection
     """
-    return render_template('index.html')
+    return render_template('connections.html')
+
+
+@app.route('/nodes')
+def nodes():
+    """
+    Details on known nodes, ability to add new node
+    """
+    return render_template('nodes.html')
+
+
+@app.route('/info')
+def info():
+    """
+    Version, your own pubkey, and other info
+    """
+    return render_template('info.html')
+
 
 
 
