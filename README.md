@@ -4,7 +4,7 @@ Its fun to connect computers. Lets see what we can do with that
 
 ## Inspiration
 
-[timebomb](http://electronicartist.net/virocene/timebomb/index.html) and [the lovers]()
+[timebomb](http://electronicartist.net/virocene/timebomb/index.html) and [the lovers](http://electronicartist.net/virocene/the-lovers/index.html)
 
 ## Program Layout
 

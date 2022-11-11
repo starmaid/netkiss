@@ -13,7 +13,7 @@ sudo pip3 install --upgrade setuptools
 
 # install python prerequisites
 #is pip installed?
-pip3 install pyzmq flask
+pip3 install pyzmq flask waitress
 
 # run python install tasks
 python3 ./installer.py
@@ -21,7 +21,7 @@ python3 ./installer.py
 # create @reboot command
 (crontab -l ; echo "@reboot sleep 20 && /home/"$USER"/netkiss/run.sh &") | uniq - | crontab -
 
-# do any networking to open ports
+# do any networking to open ports?
 
 # Make run.sh executable
 cd $RUNDIR
