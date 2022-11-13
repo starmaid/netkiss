@@ -1,0 +1,74 @@
+.parent {
+    border: 1px solid rgb(0, 0, 0);
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+}
+
+.left {
+    flex: 1 1 auto;
+    margin-top: 5%;
+    margin-right: 0;
+    margin-left: 5%;
+    margin-bottom: 5%;
+    border: 1px solid rgb(126, 126, 126);
+    width: 40%;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+}
+
+.right {
+    flex: auto;
+    margin-top: 5%;
+    margin-right: 5%;
+    margin-left: 0;
+    margin-bottom: 5%;
+    border: 1px solid rgb(126, 126, 126);
+    width: 40%;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+}
+
+.ctextcontainer {
+    flex: 1 1 auto;
+    margin: 5%;
+    text-align: center;
+}
+
+.textcontainer {
+    flex: 1 1 auto;
+    margin: 10%;
+    text-align: left;
+}
+
+html,
+body {
+    height: 95%;
+    margin: 0;
+}
+
+.box {
+    display: flex;
+    flex-flow: column;
+    height: 110%;
+}
+
+.box .row {
+    border: 1px dotted #0313fc;
+}
+
+.box .row.header {
+    flex: 0 1 auto;
+}
+
+.box .row.content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.box .row.footer {
+    flex: 0 1 40px;
+}

@@ -14,6 +14,26 @@ Its fun to connect computers. Lets see what we can do with that
 
 ![Alt text](/docs/netkiss-Wide_Network.drawio.png)
 
+
+```
+app/
+    templates/
+    data/
+        config.json     # what port to use
+        server/
+            pubkey.key
+            secret.key
+        friends/
+            friends.json
+            friend1.key
+            friend2.key
+            friend3.key
+    app.py
+    networking.py
+
+```
+
+
 ## Install
 
 

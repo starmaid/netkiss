@@ -1,7 +1,17 @@
 {% extends "layout.html" %}
-{% block content %}
-  <div class="home">
-    <h1>Info</h1>
-    <p>Info about the program and the user.</p>
-  </div>
+{% block left %}
+<div class="ctextcontainer">
+  <h2>Netkiss</h2>
+  <p>{{ version }}</p>
+</div>
+{% endblock %}
+
+{% block right %}
+<div class="textcontainer">
+  <p>hostname: {{ hostname }}</p>
+  <p>server port: {{ port }}</p>
+  <form action="/pubkey" method="get">
+    <button type="submit">Download Your Pubkey</button>
+  </form>
+</div>
 {% endblock %}

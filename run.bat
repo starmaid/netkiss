@@ -1,3 +1,7 @@
 echo serving on http://localhost:80
 
-py .\app\app.py
+start cmd /c py .\app\manager.py
+
+timeout 5
+
+start cmd /c py .\app\app.py

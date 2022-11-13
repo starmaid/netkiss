@@ -1,11 +1,13 @@
 import zmq
+import zmq.auth
+from zmq.auth.thread import ThreadAuthenticator
 import time
 import threading
 import json
 import os
 import hashlib
 
-class zNetworking():
+class zWorker():
 
     SENDER = 0
     LISTENER = 1
@@ -26,13 +28,36 @@ class zNetworking():
             if host is not None:
                 print("why did you pass a host? im a server")
             
-            #os.path.exists(keys_dir)
+            keys_dir = ''
+            public_keys_dir = ''
+
+            if not (
+                os.path.exists(keys_dir)
+                and os.path.exists(public_keys_dir)):
+                print('Key directory missing')
+                return False
+
 
             self.ctx = zmq.Context()
+            self.auth = ThreadAuthenticator(self.ctx)
+
+            self.auth.start()
+
+            # this line must be rerun if a client key is added
+            self.auth.configure_curve(domain='*', location=public_keys_dir)
+
             self.sock = self.ctx.socket(zmq.REP)
+
+            '''
+            server_secret_file = os.path.join(secret_keys_dir, "server.key_secret")
+            server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+            self.sock.curve_secretkey = server_secret
+            self.sock.curve_publickey = server_public
+            self.sock.curve_server = True  # must come before bind
+            '''
             self.sock.bind(f'tcp://*:{port}')
             
-            self.t = threading.Thread(target=self.serverLoop)
+            self.t = threading.Thread(target=self.serverLoop,daemon=True)
             self.t.start()
 
         elif self.mode == self.LISTENER:
@@ -45,7 +70,7 @@ class zNetworking():
             self.sock = self.ctx.socket(zmq.REQ)
             self.sock.connect(f'tcp://{host}:{port}')
 
-            self.t = threading.Thread(target=self.clientLoop)
+            self.t = threading.Thread(target=self.clientLoop,daemon=True)
             self.t.start()
 
         else:

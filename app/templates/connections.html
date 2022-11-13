@@ -4,4 +4,15 @@
     <h1>Connections</h1>
     <p>Show current up and down connections. Start/stop connections</p>
   </div>
+  <div>
+    <p>Listener: {{ zlistener }}</p>
+    <form action = "http://localhost/connections" method = "post">
+    <p><input type = "text" name = "name" /></p>
+    <p><input type = "submit" value = "submit" /></p>
+    </form>
+    {% if error %}
+      <p style="color:red">Bad request.</p>
+    {% endif %}
+    <p>Sender: {{ zsender }}</p>
+  </div>
 {% endblock %}

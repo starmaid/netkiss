@@ -1,7 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
-  <div class="home">
+  <div id="home">
     <h1>Homepage</h1>
     <p>Overview and vague details. Has network map.</p>
+    <p>ZMQ port: {{ zport }}</p>
+    <p>Debug: {{ isdebug }}</p>
   </div>
 {% endblock %}
