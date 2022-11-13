@@ -1,5 +1,4 @@
 .parent {
-    border: 1px solid rgb(0, 0, 0);
     flex: 1 1 auto;
     display: flex;
     flex-direction: row;
@@ -11,7 +10,6 @@
     margin-right: 0;
     margin-left: 5%;
     margin-bottom: 5%;
-    border: 1px solid rgb(126, 126, 126);
     width: 40%;
     display: flex;
     flex-flow: row;
@@ -24,7 +22,6 @@
     margin-right: 5%;
     margin-left: 0;
     margin-bottom: 5%;
-    border: 1px solid rgb(126, 126, 126);
     width: 40%;
     display: flex;
     flex-flow: row;
