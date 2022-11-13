@@ -43,8 +43,8 @@ def connections():
             return render_template('connections.html',zsender=sender,zlistener=listener, error=True)
 
     else:
-        if sender is None:
-            sender = zWorker(zWorker.SENDER)
+        #if sender is None:
+        #    sender = zWorker(zWorker.SENDER)
         
         return render_template('connections.html',zsender=sender,zlistener=listener)
     
@@ -115,15 +115,28 @@ def getNodes():
     Save this file as a new server or client or whatever
     update config to keep track of it?
     """
-    pass
+    global friends
+    if request.method == 'POST':
+        pass
+    else:
+        return friends
 
 
-@app.route('/api/node/<node_id>', methods=['GET'])
+
+@app.route('/api/node/<node_id>', methods=['GET','POST'])
 def getNodeDetails(node_id):
     """
     Returns details for a single node
     """
-    pass
+    global friends
+
+    if request.method == 'POST':
+
+        with open('./app/data/friends/friends.json') as f:
+            friends.dump(f)
+        
+    else:
+        pass
 
 
 
@@ -137,9 +150,15 @@ if __name__ == '__main__':
             print('unable to load config. Exiting')
             config = None
     
+    with open('./app/data/friends/friends.json') as f:
+        try:
+            friends = json.load(f)
+        except:
+            print('unable to load friends. Exiting')
+            friends = None
 
     # start web server
-    if config is not None:
+    if config is not None and friends is not None:
         if config['debug']:
             app.run(debug=True, port=config['flaskport'])
         else:

@@ -1,7 +1,32 @@
 {% extends "layout.html" %}
-{% block content %}
-  <div class="home">
-    <h1>Nodes</h1>
-    <p>Contact list. Allows adding and removing people.</p>
+{% block pageinfo %}
+<div class="ctextcontainer">
+  <p>Contact list. Allows adding and removing people.</p>
+</div>
+{% endblock %}
+
+{% block left %}
+<div class="ctextcontainer">
+  <div>
+    <form action="/pubkey" method="get">
+      <button type="submit">Add Node</button>
+    </form>
   </div>
+  <div>
+    <p id="jsonlist"></p>
+    <script>
+      fetch('/api/nodes')
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("jsonlist").innerHTML = JSON.stringify(data);
+        })
+    </script>
+  </div>
+</div>
+{% endblock %}
+
+{% block right %}
+<div class="textcontainer">
+  <p>details column. shows info for currently selected node</p>
+</div>
 {% endblock %}

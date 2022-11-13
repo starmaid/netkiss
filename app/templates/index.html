@@ -1,9 +1,21 @@
 {% extends "layout.html" %}
-{% block content %}
-  <div id="home">
-    <h1>Homepage</h1>
-    <p>Overview and vague details. Has network map.</p>
+{% block pageinfo %}
+<div class="ctextcontainer">
+  <p>Homepage. Overview and vague details. Has network map.</p>
+</div>
+{% endblock %}
+
+{% block left %}
+  <div class="ctextcontainer">
+    <h2>Network Graph</h2>
+    <p></p>
     <p>ZMQ port: {{ zport }}</p>
     <p>Debug: {{ isdebug }}</p>
   </div>
+{% endblock %}
+
+{% block right %}
+<div class="ctextcontainer">
+  <p>Preview of incoming data.</p>
+</div>
 {% endblock %}
