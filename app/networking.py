@@ -2,6 +2,8 @@ import zmq
 import time
 import threading
 import json
+import os
+import hashlib
 
 class zNetworking():
 
@@ -18,9 +20,14 @@ class zNetworking():
     def start(self, port, host=None) -> bool:
         """starts in whichever mode was selected"""
         if self.mode == self.SENDER:
+            # Server mode (REP)
+            # needs to know the directory of certs
+
             if host is not None:
                 print("why did you pass a host? im a server")
             
+            #os.path.exists(keys_dir)
+
             self.ctx = zmq.Context()
             self.sock = self.ctx.socket(zmq.REP)
             self.sock.bind(f'tcp://*:{port}')
@@ -61,22 +68,14 @@ class zNetworking():
         else:
             return None
 
-    def setData(self, data) -> bool:
+    def setData(self, data, dtype, chain, encoded) -> bool:
         if self.mode == self.SENDER:
             self.data = data
-            return True
-        else:
-            return False
-    
-    def getHeader(self) -> dict:
-        if self.mode == self.LISTENER:
-            return self.header
-        else:
-            return None
-
-    def setHeader(self, header) -> bool:
-        if self.mode == self.SENDER:
-            self.header = header
+            self.header['id'] = hashlib.md5(self.body.encode()).hexdigest()
+            self.header['time'] = time.time()
+            self.header['chain'] = chain
+            self.header['type'] = dtype
+            self.header['b64encoded'] = encoded
             return True
         else:
             return False
@@ -102,11 +101,11 @@ class zNetworking():
                 if 'ping' in req.keys() and req['ping']:
                     rep['ping'] = time.time()
                 if 'header' in req.keys() and req['header']:
-                    rep['header'] = {}
+                    rep['header'] = self.header
                 if 'body' in req.keys() and req['body']:
-                    rep['body'] = None
+                    rep['body'] = self.body
             try:
-                self.sock.send_string(f"response lol {time.monotonic()}")
+                self.sock.send_string(json.dumps(rep))
             except:
                 break
         return True
@@ -140,7 +139,7 @@ class zNetworking():
 
     def clientLoop(self):
         while True:
-            rep = self.clientBody()
+            rep = self.clientRequest(['ping','header','body'])
             if rep is not None:
                 self.header = rep['header']
                 self.body = rep['body']
