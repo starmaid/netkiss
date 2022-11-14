@@ -2,16 +2,33 @@
 {% block pageinfo %}
 <div class="ctextcontainer">
   <p>Contact list. Allows adding and removing people.</p>
+  <a href="/nodes?refresh=true">Refresh nodes</a>
+  {#
+  <button id="refreshbutton">Refresh List</button>
+  <script>
+    document.getElementById("refreshbutton").onclick = function () {
+      fetch("/nodes?refresh=true")
+        .then(() => window.location.reload())
+    }
+  </script>
+  #}
 </div>
 {% endblock %}
 
 {% block left %}
 <div class="ctextcontainer">
   <div>
-    <form action="/pubkey" method="get">
-      <button type="submit">Add Node</button>
-    </form>
+    <a href="/nodes?new=true">Add user</a>
   </div>
+  <div>
+    {% for f, val in friends|items %}
+    <div>
+      <a href="/nodes?view={{ f }}">{{ f }}</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {#
   <div>
     <p id="jsonlist"></p>
     <script>
@@ -22,11 +39,26 @@
         })
     </script>
   </div>
+  #}
 </div>
 {% endblock %}
 
 {% block right %}
+{% if hostname %}
 <div class="textcontainer">
-  <p>details column. shows info for currently selected node</p>
+  <form action="/api/nodes" method="post" enctype="multipart/form-data">
+    <label for="hostname">Hostname</label><br>
+    <input type="text" name="hostname" id="hostname" value="{{ hostname }}"><br>
+    <label for="hostname">Port</label><br>
+    <input type="text" name="port" id="port" value="{{ port }}"><br>
+    <p>{{ haskey }}</p>
+    <label for="hostname">Upload new key file</label><br>
+    <input type="file" name="key" id="keyfile" accept=".key"><br>
+    <button type="submit">Update</button>
+  </form>
+  {% if error %}
+  <p>Error saving node: {{ error }}</p>
+  {% endif %}
 </div>
+{% endif %}
 {% endblock %}

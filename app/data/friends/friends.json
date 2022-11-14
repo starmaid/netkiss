@@ -1,6 +1,14 @@
 {
-    "starmaid.us.to":{
+    "starmaid.us.to": {
         "hostname": "starmaid.us.to",
         "port": 6000
+    },
+    "mimi.com": {
+        "hostname": "mimi.com",
+        "port": 20
+    },
+    "www.leigh": {
+        "hostname": "www.leigh",
+        "port": 12
     }
 }

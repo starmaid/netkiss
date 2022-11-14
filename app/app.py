@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, send_file
-from waitress import serve
 import json
 import os
 
+from flask import Flask, render_template, request, redirect, url_for, send_file
 from net import zWorker
-
+from waitress import serve
 
 app = Flask(__name__)
 listener = None
@@ -49,12 +48,41 @@ def connections():
         return render_template('connections.html',zsender=sender,zlistener=listener)
     
 
-@app.route('/nodes')
+@app.route('/nodes', methods=['GET'])
 def nodes():
     """
     Details on known nodes, ability to add new node
+    view node if 
+    
     """
-    return render_template('nodes.html')
+    global friends
+
+    if 'refresh' in request.args.keys():
+            if request.args['refresh'] == 'true':
+                friends = loadFriends()
+
+    if 'view' in request.args.keys():
+        f = request.args['view']
+        if f in friends.keys():
+            path = os.path.join(app.root_path,os.path.normpath(f'./data/friends/{f}.key'))
+            #print(path)
+            #print(os.path.exists(path))
+            if os.path.exists(path):
+                haskey = "Key saved for this user"
+            else:
+                haskey = "Key not uploaded for this user"
+            return render_template('nodes.html',
+                friends=friends,
+                hostname=friends[f]['hostname'],
+                port=friends[f]['port'],
+                haskey=haskey
+                )
+    
+    if 'new' in request.args.keys():
+        if request.args['new'] == 'true':
+            return render_template('nodes.html',friends=friends,hostname='new')
+
+    return render_template('nodes.html',friends=friends)
 
 
 @app.route('/info')
@@ -117,45 +145,115 @@ def getNodes():
     """
     global friends
     if request.method == 'POST':
-        pass
+        if 'hostname' in request.form.keys() and 'port' in request.form.keys():
+            nHostname = request.form['hostname']
+            nPortStr = request.form['port']
+
+            try:
+                nPort = int(nPortStr)
+            except:
+                print('not a port')
+                return render_template('nodes.html',friends=friends, error='bad hostname',hostname=nHostname,port=nPortStr)
+
+
+            if nHostname in friends.keys():
+                friends[nHostname]['port'] = nPort
+            else:
+                friends[nHostname] = {
+                    'hostname': nHostname,
+                    'port': nPort
+                }
+
+            didsave = saveFriends(friends)
+            if not didsave:
+                print('error saving friends json')
+
+            if 'key' in request.files.keys() and request.files['key'].filename != '':
+                newfile = request.files['key']
+                print(newfile.filename)
+
+                if newfile.filename.split('.')[-1] != 'key':
+                    print('wrong extension IDIOT!!!!')
+                    return render_template('nodes.html',friends=friends, error='bad file extension',hostname=nHostname,port=nPortStr)
+
+                fcontent = newfile.read()
+                try:
+                    fcontd = fcontent.decode('ascii')
+                except:
+                    print('decode error')
+                
+                print(len(fcontd))
+                if len(fcontd) > 400:
+                    print('file too dang long')
+                
+                if 'public-key' not in fcontd:
+                    print('not a public-key')
+                
+                print(fcontd)
+
+                newpath = os.path.join(app.root_path,
+                    os.path.normpath(f'./data/friends/{nHostname}.key'))
+                
+                with open(newpath,'w') as f:
+                    f.write(fcontd.replace('\r',''))
+
+            return redirect(url_for('nodes',view=nHostname))
+
+        else:
+            return
+
+            
+    
+            '''
+            path = os.path.join(app.root_path,'./data/server/pubkey.key')
+            f = request.files['file']
+            f.save(f.filename)
+            return 'file uploaded successfully'
+            '''
+        return
     else:
         return friends
-
-
-
-@app.route('/api/node/<node_id>', methods=['GET','POST'])
-def getNodeDetails(node_id):
-    """
-    Returns details for a single node
-    """
-    global friends
-
-    if request.method == 'POST':
-
-        with open('./app/data/friends/friends.json') as f:
-            friends.dump(f)
         
-    else:
-        pass
 
 
 
-if __name__ == '__main__':
-    # Load config
+# ============ NON PAGE HELPERS ===========
 
-    with open('./app/data/config.json') as c:
+def loadConfig():
+    with open('./app/data/config.json', 'r') as c:
         try:
             config = json.load(c)
         except:
             print('unable to load config. Exiting')
             config = None
-    
-    with open('./app/data/friends/friends.json') as f:
+    return config
+
+
+def loadFriends():
+    with open('./app/data/friends/friends.json', 'r') as f:
         try:
             friends = json.load(f)
         except:
             print('unable to load friends. Exiting')
             friends = None
+    return friends
+
+def saveFriends(friends):
+    path = os.path.join(app.root_path,os.path.normpath('./data/friends/friends.json'))
+    print(path)
+    with open(path, 'w') as f:
+        try:
+            json.dump(friends, f, indent=4)
+        except Exception as e:
+            print(e)
+            return None
+    return friends
+
+if __name__ == '__main__':
+    # Load config
+
+    config = loadConfig()
+    friends = loadFriends()
 
     # start web server
     if config is not None and friends is not None:
