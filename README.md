@@ -6,6 +6,23 @@ Its fun to connect computers. Lets see what we can do with that
 
 [timebomb](http://electronicartist.net/virocene/timebomb/index.html) and [the lovers](http://electronicartist.net/virocene/the-lovers/index.html)
 
+## Screenshots
+
+### Minimum Viable Product
+
+I'm currently trying to get the most basic functionality working. This includes basic contact management, connecting/disconnecting, and basic data transfer.
+
+My backend code is being made with an eye for the future, but the frontend is very "just enough to prove it works"
+
+![](/docs/v1_index.png)
+
+![](/docs/v1_connections.png)
+
+![](/docs/v1_nodes.png)
+
+![](/docs/v1_info.png)
+
+
 ## Program Layout
 
 ![Alt text](/docs/netkiss-App.drawio.png)
