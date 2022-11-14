@@ -155,7 +155,6 @@ def getNodes():
                 print('not a port')
                 return render_template('nodes.html',friends=friends, error='bad hostname',hostname=nHostname,port=nPortStr)
 
-
             if nHostname in friends.keys():
                 friends[nHostname]['port'] = nPort
             else:
@@ -198,19 +197,8 @@ def getNodes():
                     f.write(fcontd.replace('\r',''))
 
             return redirect(url_for('nodes',view=nHostname))
-
         else:
             return
-
-            
-    
-            '''
-            path = os.path.join(app.root_path,'./data/server/pubkey.key')
-            f = request.files['file']
-            f.save(f.filename)
-            return 'file uploaded successfully'
-            '''
-        return
     else:
         return friends
         
