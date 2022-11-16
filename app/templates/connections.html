@@ -1,17 +1,33 @@
 {% extends "layout.html" %}
 {% block pageinfo %}
 <div class="ctextcontainer">
-  <p>Connections. Shows current server user and client user, if active. Allows starting and stopping of server, and connecting to server player.</p>
+  <p>Connections. Shows current server user and client user, if active. Allows starting and stopping of server, and
+    connecting to server player.</p>
 </div>
 {% endblock %}
 
 {% block left %}
 <div class="textcontainer">
-  <p>Listener: {{ zlistener }}</p>
+  {% if zlistener is none %}
+  <p>Select a server player to recieve data from.</p>
   <form action="http://localhost/connections" method="post">
-    <p><input type="text" name="name" /></p>
-    <p><input type="submit" value="submit" /></p>
+    <input type="hidden" id="type" name="type" value="listener">
+    <input type="hidden" id="type" name="action" value="connect">
+    <select name="hostname" />
+    {% for f, val in friends|items %}
+    <option value="{{ f }}">{{ f }}</option>
+    {% endfor %}
+    <input type="submit" value="Connect" />
   </form>
+  {% else %}
+  <p>Currently connected to {{ zlistener }}</p>
+  <form action="http://localhost/connections" method="post">
+    <input type="hidden" id="type" name="type" value="listener">
+    <input type="hidden" id="type" name="action" value="disconnect">
+    <input type="submit" value="Disconnect" />
+  </form>
+  <p>Last ping: None</p>
+  {% endif %}
   {% if error %}
   <p style="color:red">Bad request.</p>
   {% endif %}
@@ -20,6 +36,25 @@
 
 {% block right %}
 <div class="textcontainer">
-  <p>Sender: {{ zsender }}</p>
+  {% if zsender is none %}
+  <p>Click to enable server.</p>
+  <p>You do not control who connects as your client player.</p>
+  <form action="http://localhost/connections" method="post">
+    <input type="hidden" id="type" name="type" value="sender">
+    <input type="hidden" id="type" name="action" value="connect">
+    <input type="submit" value="Start Server" />
+  </form>
+  {% else %}
+  <p>Currently connected to {{ zsender }}</p>
+  <form action="http://localhost/connections" method="post">
+    <input type="hidden" id="type" name="type" value="sender">
+    <input type="hidden" id="type" name="action" value="disconnect">
+    <input type="submit" value="Disconnect" />
+  </form>
+  <p>Last ping: None</p>
+  {% endif %}
+  {% if error %}
+  <p style="color:red">Bad request.</p>
+  {% endif %}
 </div>
 {% endblock %}

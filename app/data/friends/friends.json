@@ -10,5 +10,9 @@
     "www.leigh": {
         "hostname": "www.leigh",
         "port": 12
+    },
+    "mimi.uk": {
+        "hostname": "mimi.uk",
+        "port": 20
     }
 }

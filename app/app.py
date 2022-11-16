@@ -31,22 +31,46 @@ def connections():
     """
     global sender
     global listener
+    global friends
 
     if request.method == 'POST':
+        print(request.form)
         if 'type' in request.form.keys() and 'action' in request.form.keys():
-            if request.form['type'] == 'listener':
-                if 'friend' in request.form.keys():
+            if request.form['action'] == 'connect':
+                if request.form['type'] == 'listener':
+                    if request.form['hostname'] in friends.keys():
+                        pass
+                    else:
+                        pass
+                elif request.form['type'] == 'sender':
                     pass
+                else:
+                    pass
+            elif request.form['action'] == 'disconnect':
+                if request.form['type'] == 'listener':
+                    pass
+                elif request.form['type'] == 'sender':
+                    pass
+                else:
+            else:
+                pass
         else:
             # bad post request - show error
-            return render_template('connections.html',zsender=sender,zlistener=listener, error=True)
+            return render_template('connections.html',
+                zsender=sender,
+                zlistener=listener,
+                friends=friends,
+                error=True)
 
     else:
         #if sender is None:
         #    sender = zWorker(zWorker.SENDER)
         
-        return render_template('connections.html',zsender=sender,zlistener=listener)
-    
+        return render_template('connections.html',
+            zsender=sender,
+            zlistener=listener,
+            friends=friends)
+        
 
 @app.route('/nodes', methods=['GET'])
 def nodes():
@@ -101,6 +125,14 @@ def info():
 def pubkey():
     path = os.path.join(app.root_path,'./data/server/pubkey.key')
     return send_file(path, as_attachment=True)
+
+
+# this ones for fun teehee
+
+@app.route('/nitw')
+def nitw():
+    path = os.path.normpath("C:\\Users\\star-tower\\Pictures\\new nitw.png")
+    return send_file(path, as_attachment=False)
 
 
 # API CALLS: not meant to be called by a browser
