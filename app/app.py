@@ -35,32 +35,43 @@ def connections():
 
     if request.method == 'POST':
         print(request.form)
+
+        msg = None
+
         if 'type' in request.form.keys() and 'action' in request.form.keys():
             if request.form['action'] == 'connect':
                 if request.form['type'] == 'listener':
                     if request.form['hostname'] in friends.keys():
-                        pass
+                        listener = zWorker(zWorker.LISTENER,host=request.form['hostname'])
                     else:
-                        pass
+                        msg = 'Hostname not found'
                 elif request.form['type'] == 'sender':
-                    pass
+                    sender = zWorker(zWorker.SENDER)
                 else:
-                    pass
+                    msg = 'Not a valid type'
             elif request.form['action'] == 'disconnect':
                 if request.form['type'] == 'listener':
                     pass
                 elif request.form['type'] == 'sender':
                     pass
                 else:
+                    msg = 'Not a valid type'
             else:
-                pass
+                msg = 'Not a valid action'
+        
+        if msg is None:
+            return render_template('connections.html',
+                zsender=sender,
+                zlistener=listener,
+                friends=friends)
         else:
             # bad post request - show error
             return render_template('connections.html',
                 zsender=sender,
                 zlistener=listener,
                 friends=friends,
-                error=True)
+                error=True,
+                errormsg=msg)
 
     else:
         #if sender is None:
