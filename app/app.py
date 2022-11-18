@@ -49,11 +49,13 @@ def connections():
                         if not success:
                             msg = "Unable to connect to server. Check configuration."
                             listener = None
+                        else:
+                            print('successfully started listener')
                     else:
                         msg = 'Hostname not found'
                 elif request.form['type'] == 'sender':
                     sender = zWorker(zWorker.SENDER,datadir=os.path.dirname(__file__))
-                    success = sender(port=config['zmqservport'])
+                    success = sender.start(port=config['zmqservport'])
                     if not success:
                         msg = "Unable to start server. Check configuration."
                         listener = None
