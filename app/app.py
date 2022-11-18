@@ -32,6 +32,7 @@ def connections():
     global sender
     global listener
     global friends
+    global config
 
     if request.method == 'POST':
         print(request.form)
@@ -42,18 +43,29 @@ def connections():
             if request.form['action'] == 'connect':
                 if request.form['type'] == 'listener':
                     if request.form['hostname'] in friends.keys():
-                        listener = zWorker(zWorker.LISTENER,host=request.form['hostname'])
+                        f = friends[request.form['hostname']]
+                        listener = zWorker(zWorker.LISTENER,datadir=os.path.dirname(__file__))
+                        success = listener.start(port=f['port'],host=f['hostname'])
+                        if not success:
+                            msg = "Unable to connect to server. Check configuration."
+                            listener = None
                     else:
                         msg = 'Hostname not found'
                 elif request.form['type'] == 'sender':
-                    sender = zWorker(zWorker.SENDER)
+                    sender = zWorker(zWorker.SENDER,datadir=os.path.dirname(__file__))
+                    success = sender(port=config['zmqservport'])
+                    if not success:
+                        msg = "Unable to start server. Check configuration."
+                        listener = None
                 else:
                     msg = 'Not a valid type'
             elif request.form['action'] == 'disconnect':
                 if request.form['type'] == 'listener':
-                    pass
+                    listener.stop()
+                    listener = None
                 elif request.form['type'] == 'sender':
-                    pass
+                    sender.stop()
+                    sender = None
                 else:
                     msg = 'Not a valid type'
             else:
@@ -134,7 +146,7 @@ def info():
 
 @app.route('/pubkey')
 def pubkey():
-    path = os.path.join(app.root_path,'./data/server/pubkey.key')
+    path = os.path.join(app.root_path,'./data/server/server.key')
     return send_file(path, as_attachment=True)
 
 

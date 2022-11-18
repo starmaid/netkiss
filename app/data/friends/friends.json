@@ -14,5 +14,9 @@
     "mimi.uk": {
         "hostname": "mimi.uk",
         "port": 20
+    },
+    "localhost": {
+        "hostname": "localhost",
+        "port": 6969
     }
 }

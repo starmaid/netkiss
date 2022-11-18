@@ -7,10 +7,7 @@ import zmq.auth
 
 def generate_certificates(base_dir: Union[str, os.PathLike]) -> None:
     '''Generate client and server CURVE certificate files'''
-    keys_dir = os.path.join(base_dir, 'certificates')
-    if os.path.exists(keys_dir):
-        shutil.rmtree(keys_dir)
-    os.mkdir(keys_dir)
+    keys_dir = os.path.join(base_dir, os.path.normpath('app/data/server'))
 
     # create new keys in certificates dir
     server_public_file, server_secret_file = zmq.auth.create_certificates(

@@ -12,14 +12,18 @@ class zWorker():
     SENDER = 0
     LISTENER = 1
 
-    def __init__(self, mode) -> None:
+    def __init__(self, mode, datadir=None) -> None:
         self.mode = mode
         self.ctx = None
         self.data = None
-        self.header = None
+        self.header = {}
+        if datadir is None:
+            self.datadir = os.path.dirname(__file__)
+        else:
+            self.datadir = datadir
         pass
 
-    def start(self, port, host=None) -> bool:
+    def start(self, port=None, host=None) -> bool:
         """starts in whichever mode was selected"""
         if self.mode == self.SENDER:
             # Server mode (REP)
@@ -27,16 +31,15 @@ class zWorker():
 
             if host is not None:
                 print("why did you pass a host? im a server")
-            
-            keys_dir = ''
-            public_keys_dir = ''
+            root_dir = self.datadir
+            keys_dir = os.path.join(root_dir, os.path.normpath('./data/server/'))
+            public_keys_dir = os.path.join(root_dir, os.path.normpath('./data/friends/'))
 
             if not (
                 os.path.exists(keys_dir)
                 and os.path.exists(public_keys_dir)):
                 print('Key directory missing')
                 return False
-
 
             self.ctx = zmq.Context()
             self.auth = ThreadAuthenticator(self.ctx)
@@ -48,13 +51,18 @@ class zWorker():
 
             self.sock = self.ctx.socket(zmq.REP)
 
-            '''
-            server_secret_file = os.path.join(secret_keys_dir, "server.key_secret")
-            server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+            server_secret_file = os.path.join(keys_dir, "server.key_secret")
+
+            try:
+                server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+            except:
+                print('Unable to load server keys')
+                return False
+
             self.sock.curve_secretkey = server_secret
             self.sock.curve_publickey = server_public
             self.sock.curve_server = True  # must come before bind
-            '''
+            
             self.sock.bind(f'tcp://*:{port}')
             
             self.t = threading.Thread(target=self.serverLoop,daemon=True)
@@ -65,9 +73,36 @@ class zWorker():
             if host is None:
                 print('listener needs a host')
                 return False
+            
+            root_dir = self.datadir
+            keys_dir = os.path.join(root_dir, os.path.normpath('./data/server/'))
+            public_keys_dir = os.path.join(root_dir, os.path.normpath('./data/friends/'))
+
+            if not (
+                os.path.exists(keys_dir)
+                and os.path.exists(public_keys_dir)):
+                print('Key directory missing')
+                return False
+
+            try:
+                fname = f"{host}.key"
+                server_public_file = os.path.join(public_keys_dir, fname)
+                print(server_public_file)
+            except:
+                print('Unable to load server pubkey')
+                return False
+
+            server_public, _ = zmq.auth.load_certificate(server_public_file)
 
             self.ctx = zmq.Context()
             self.sock = self.ctx.socket(zmq.REQ)
+
+            client_secret_file = os.path.join(keys_dir, "server.key_secret")
+            client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
+            self.sock.curve_secretkey = client_secret
+            self.sock.curve_publickey = client_public
+
+            self.sock.curve_serverkey = server_public
             self.sock.connect(f'tcp://{host}:{port}')
 
             self.t = threading.Thread(target=self.clientLoop,daemon=True)
@@ -96,7 +131,7 @@ class zWorker():
     def setData(self, data, dtype, chain, encoded) -> bool:
         if self.mode == self.SENDER:
             self.data = data
-            self.header['id'] = hashlib.md5(self.body.encode()).hexdigest()
+            self.header['id'] = hashlib.md5(self.data.encode()).hexdigest()
             self.header['time'] = time.time()
             self.header['chain'] = chain
             self.header['type'] = dtype
@@ -110,12 +145,14 @@ class zWorker():
             try:
                 message = self.sock.recv()
             except:
+                print('server could not recieve msg')
                 break
             print(f"Received request: {message}")
             
             try:
                 req = json.loads(message)
             except json.JSONDecodeError:
+                print('server could not decode json')
                 req = None
 
             rep = {}
@@ -128,10 +165,11 @@ class zWorker():
                 if 'header' in req.keys() and req['header']:
                     rep['header'] = self.header
                 if 'body' in req.keys() and req['body']:
-                    rep['body'] = self.body
+                    rep['body'] = self.data
             try:
                 self.sock.send_string(json.dumps(rep))
             except:
+                print('server could not send response')
                 break
         return True
     
@@ -153,12 +191,18 @@ class zWorker():
             req[f] = True 
         try:
             self.sock.send_string(json.dumps(req))
+        except:
+            print('client could not send message')
+            return None
+        try:    
             message = self.sock.recv()
             try:
                 rep = json.loads(message)
             except json.JSONDecodeError:
+                print('client could not decode message')
                 rep = None
         except:
+            print('client could not recieve message')
             return None
         return rep
 
@@ -167,6 +211,8 @@ class zWorker():
             rep = self.clientRequest(['ping','header','body'])
             if rep is not None:
                 self.header = rep['header']
-                self.body = rep['body']
+                self.data = rep['body']
+                print(self.data)
+            print('clientloop 5')
             time.sleep(5)
 
