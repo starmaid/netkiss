@@ -125,7 +125,18 @@ class zWorker():
 
     def getData(self) -> str:
         if self.mode == self.LISTENER:
-            return self.data
+            '''
+            self.header['id'] = hashlib.md5(self.data.encode()).hexdigest()
+            self.header['time'] = time.time()
+            self.header['chain'] = chain
+            self.header['type'] = dtype
+            self.header['b64encoded'] = encoded
+            '''
+            return {'connected': True,
+                    'type': self.header['type'],
+                    'b64encoded': self.header['b64encoded'],
+                    'data': self.data
+                    }
         else:
             return None
 

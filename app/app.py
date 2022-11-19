@@ -16,7 +16,14 @@ def index():
     """
     The homepage. Overview and vague details
     """
-    return render_template('index.html',zport=config['zmqservport'], isdebug=config['debug'])
+    global listener
+    text = None
+    image = None
+    if listener is not None:
+        d = listener.getData()
+        if d['type'] == 'txt':
+            text = d['data'] 
+    return render_template('index.html',zport=config['zmqservport'], isdebug=config['debug'],text=text,image=image)
 
 
 @app.route('/connections', methods=['GET','POST'])
@@ -155,43 +162,6 @@ def pubkey():
     return send_file(path, as_attachment=True)
 
 
-# this ones for fun teehee
-
-@app.route('/nitw')
-def nitw():
-    path = os.path.normpath("C:\\Users\\star-tower\\Pictures\\new nitw.png")
-    return send_file(path, as_attachment=False)
-
-
-# API CALLS: not meant to be called by a browser
-
-@app.route('/api/listener', methods=['POST'])
-def startListener():
-    """
-    Takes parameters, validates them, and starts a listener process
-    User can then monitor the listener from the main page
-    
-    messagetype:
-        start
-        stop
-    """
-    
-    pass
-
-
-@app.route('/api/sender', methods=['POST'])
-def startSender():
-    """
-    Takes parameters, validates them, and starts a sender process
-    User can then monitor the sender from the main page
-
-    messagetype:
-        start
-        stop
-    """
-    pass
-
-
 @app.route('/api/nodes', methods=['GET','POST'])
 def getNodes():
     """
@@ -262,6 +232,78 @@ def getNodes():
     else:
         return friends
         
+# ============== get and set data ===================
+
+@app.route('/getdata', methods=['GET'])
+def getdata():
+    global listener
+    if listener is None:
+        d = {'connected': False}
+    else:
+        d = listener.getData()
+    return d
+
+
+@app.route('/setdata', methods=['POST'])
+def setdata():
+    if request.method == 'POST':
+        try:
+            r = json.loads(request.data.decode())
+        except json.JSONDecodeError:
+            data = request.data.decode()
+            r = None
+
+        print(r)
+        if r is not None:
+            if 'data' not in r.keys():
+                # this means just accept the whole thing. who cares
+                data = str(r)
+                pass
+            else:
+                data = r['data']
+                if 'b64encoded' in r.keys():
+                    try:
+                        encoded = bool(r['b64encoded'])
+                    except:
+                        encoded = False
+                else:
+                    encoded = False
+                if 'type' in r.keys():
+                    dtype = str(r['type'])
+                else:
+                    dtype = 'txt'
+        else:
+            encoded = False
+            dtype = 'txt'
+            pass
+        
+        global sender
+        global listener
+        if sender is None:
+            d = {'connected': False}
+        else:
+            if listener is not None:
+                chain = listener.header['chain']
+                if chain[0] == config['hostname']:
+                    chain.pop(0)
+                chain.append(config['hostname'])
+            else:
+                chain = [config['hostname']]
+
+            success = sender.setData(data, dtype, chain, encoded)
+            d = {'connected': success}
+        
+        return d
+    else:
+        return 'Endpoint only accepts POST'
+
+
+# this ones for fun teehee
+
+@app.route('/nitw')
+def nitw():
+    path = os.path.normpath("C:\\Users\\star-tower\\Pictures\\new nitw.png")
+    return send_file(path, as_attachment=False)
 
 
 

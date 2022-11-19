@@ -17,5 +17,12 @@
 {% block right %}
 <div class="ctextcontainer">
   <p>Preview of incoming data.</p>
+  {% if text %}
+  <p>{{ text }}</p>
+  {% elif image %}
+  <p>Theres an image! not implemented yet</p>
+  {% else %}
+  <p>No data incoming.</p>
+  {% endif %}
 </div>
 {% endblock %}
