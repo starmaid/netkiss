@@ -1,10 +1,12 @@
 # NetKiss Project
 
-Its fun to connect computers. Lets see what we can do with that
+Its fun to connect computers. Lets see what we can do with that, what if we played telephone?
 
 ## Inspiration
 
 [timebomb](http://electronicartist.net/virocene/timebomb/index.html) and [the lovers](http://electronicartist.net/virocene/the-lovers/index.html)
+
+Computers that pass around a file, and change it as they do.
 
 ## Screenshots
 
@@ -14,13 +16,13 @@ I'm currently trying to get the most basic functionality working. This includes 
 
 My backend code is being made with an eye for the future, but the frontend is very "just enough to prove it works"
 
-![](/docs/v1_index.png)
+![](/docs/index.png)
 
-![](/docs/v1_connections.png)
+![](/docs/connections.png)
 
-![](/docs/v1_nodes.png)
+![](/docs/nodes.png)
 
-![](/docs/v1_info.png)
+![](/docs/info.png)
 
 
 ## Program Layout
@@ -63,13 +65,13 @@ app/
 2. Download the files from this repository.
 
     ```
-    git clone https://github.com/starmaid/pulseofexploration.git
+    git clone https://github.com/starmaid/netkiss.git
     ```
 
 3. Navigate to, make executable, and run the install script. Get a cup of tea, it will take some time.
 
     ```
-    cd ./pulseofexploration
+    cd ./netkiss
     chmod +x ./install.sh
     ./install.sh
     ```

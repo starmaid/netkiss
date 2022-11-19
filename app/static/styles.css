@@ -1,3 +1,68 @@
+@font-face {
+    font-family: RubikGlitch-Regular;
+    src: url(RubikGlitch-Regular.ttf);
+}
+
+@font-face {
+    font-family: TitilliumWeb;
+    src: url(TitilliumWeb-Regular.ttf);
+}
+
+@font-face {
+    font-family: TitilliumWeb;
+    src: url(TitilliumWeb-Bold.ttf);
+    font-weight: bold;
+}
+
+p {
+    font-family: TitilliumWeb;
+}
+
+a {
+    font-family: TitilliumWeb;
+
+}
+
+h2 {
+    font-family: TitilliumWeb;
+}
+
+.logo {
+    font-family: RubikGlitch-Regular;
+    font-size: 4rem;
+    text-align: left;
+    height: fit-content;
+    margin: 0.5rem;
+}
+
+.menu {
+    background-color: rgb(132, 132, 132);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.li {
+    flex: 1 1 auto;
+    flex-flow: row;
+    width: 25%;
+    height: min-content;
+    text-align: center;
+    border: 1px solid black;
+}
+
+.pageinfo {
+    align-items: center;
+    margin: 0;
+}
+
+.pageinfo.text {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 15%;
+    margin-right: 15%;
+}
+
 .parent {
     flex: 1 1 auto;
     display: flex;
@@ -14,6 +79,8 @@
     display: flex;
     flex-flow: row;
     align-items: center;
+    background-color: rgb(118, 161, 200);
+    border-radius: 2rem;
 }
 
 .right {
@@ -26,6 +93,8 @@
     display: flex;
     flex-flow: row;
     align-items: center;
+    background-color: rgb(118, 161, 200);
+    border-radius: 2rem;
 }
 
 .ctextcontainer {
