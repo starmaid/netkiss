@@ -8,8 +8,8 @@ def testname():
     print(__file__)
 
 if __name__ == "__main__":
-    s = zWorker(zWorker.LISTENER, datadir=os.path.dirname(__file__))
-    started = s.start(port=6969,host='localhost')
+    s = zWorker(zWorker.LISTENER, datadir="C:\\Users\\star-tower\\Projects\\netkiss\\netkiss\\app")
+    started = s.start(port=6000,host='localhost')
     if started:
         print('started test client. trying to connect to localhost:6969')
         try:

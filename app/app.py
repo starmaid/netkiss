@@ -46,6 +46,7 @@ def connections():
                         f = friends[request.form['hostname']]
                         listener = zWorker(zWorker.LISTENER,datadir=os.path.dirname(__file__))
                         success = listener.start(port=f['port'],host=f['hostname'])
+                        print('after listener start')
                         if not success:
                             msg = "Unable to connect to server. Check configuration."
                             listener = None
@@ -63,9 +64,11 @@ def connections():
                     msg = 'Not a valid type'
             elif request.form['action'] == 'disconnect':
                 if request.form['type'] == 'listener':
+                    print('disconnecting listener')
                     listener.stop()
                     listener = None
                 elif request.form['type'] == 'sender':
+                    print('disconnecting sender')
                     sender.stop()
                     sender = None
                 else:

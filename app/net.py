@@ -64,12 +64,13 @@ class zWorker():
             self.sock.curve_server = True  # must come before bind
             
             self.sock.bind(f'tcp://*:{port}')
+            print(f'bound to to tcp://*:{port}')
             
             self.t = threading.Thread(target=self.serverLoop,daemon=True)
             self.t.start()
 
         elif self.mode == self.LISTENER:
-            
+            print('starting listener')
             if host is None:
                 print('listener needs a host')
                 return False
@@ -104,10 +105,10 @@ class zWorker():
 
             self.sock.curve_serverkey = server_public
             self.sock.connect(f'tcp://{host}:{port}')
-
+            print(f'connecting to tcp://{host}:{port}')
             self.t = threading.Thread(target=self.clientLoop,daemon=True)
             self.t.start()
-
+            print('done starting listener')
         else:
             return False
         
@@ -141,7 +142,8 @@ class zWorker():
             return False
 
     def serverLoop(self):
-        while True:
+        while self.sock is not None:
+            print('serverloop start')
             try:
                 message = self.sock.recv()
             except:
@@ -207,7 +209,8 @@ class zWorker():
         return rep
 
     def clientLoop(self):
-        while True:
+        while self.sock is not None:
+            print('in clientloop')
             rep = self.clientRequest(['ping','header','body'])
             if rep is not None:
                 self.header = rep['header']
