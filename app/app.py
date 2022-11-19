@@ -1,28 +1,35 @@
+# app.py
+# This file runs the flask webserver
+
 import json
 import os
 
 from flask import Flask, render_template, request, redirect, url_for, send_file
-from net import zWorker
 from waitress import serve
+
+from net import zWorker
 
 app = Flask(__name__)
 listener = None
 sender = None
 
-# PAGES: endpoints that return webpages
+# PAGES: endpoints that return webpages =======================================
 
 @app.route('/')
 def index():
     """
-    The homepage. Overview and vague details
+    The homepage. Network graph and data preview.
     """
     global listener
     text = None
     image = None
     if listener is not None:
+        # we have some data to preview
         d = listener.getData()
         if d['type'] == 'txt':
             text = d['data'] 
+        # TODO handle and implement more types of data
+    
     return render_template('index.html',zport=config['zmqservport'], isdebug=config['debug'],text=text,image=image)
 
 
@@ -30,6 +37,9 @@ def index():
 def connections():
     """
     Current connections, allows user to start new connection
+    or close an existing one.
+    GET:
+        (returns webpage)
     
     POST:
         type: listener/sender
@@ -42,48 +52,57 @@ def connections():
     global config
 
     if request.method == 'POST':
-        print(request.form)
-
         msg = None
 
         if 'type' in request.form.keys() and 'action' in request.form.keys():
             if request.form['action'] == 'connect':
                 if request.form['type'] == 'listener':
-                    if request.form['hostname'] in friends.keys():
-                        f = friends[request.form['hostname']]
-                        listener = zWorker(zWorker.LISTENER,datadir=os.path.dirname(__file__))
-                        success = listener.start(port=f['port'],host=f['hostname'])
-                        print('after listener start')
-                        if not success:
-                            msg = "Unable to connect to server. Check configuration."
-                            listener = None
-                        else:
-                            print('successfully started listener')
+                    if listener is not None:
+                        msg = "Error: already connected to server"
                     else:
-                        msg = 'Hostname not found'
+                        if request.form['hostname'] in friends.keys():
+                            f = friends[request.form['hostname']]
+                            listener = zWorker(zWorker.LISTENER,datadir=os.path.dirname(__file__))
+                            success = listener.start(port=f['port'],host=f['hostname'])
+                            print('after listener start')
+                            if not success:
+                                msg = "Unable to connect to server. Check configuration."
+                                listener = None
+                            else:
+                                print('successfully started listener')
+                        else:
+                            msg = 'Hostname not found'
                 elif request.form['type'] == 'sender':
-                    sender = zWorker(zWorker.SENDER,datadir=os.path.dirname(__file__))
-                    success = sender.start(port=config['zmqservport'])
-                    if not success:
-                        msg = "Unable to start server. Check configuration."
-                        listener = None
+                    if sender is not None:
+                        msg = "Error: server already active"
+                    else:
+                        sender = zWorker(zWorker.SENDER,datadir=os.path.dirname(__file__))
+                        success = sender.start(port=config['zmqservport'])
+                        if not success:
+                            msg = "Unable to start server. Check configuration."
+                            listener = None
                 else:
                     msg = 'Not a valid type'
             elif request.form['action'] == 'disconnect':
                 if request.form['type'] == 'listener':
-                    print('disconnecting listener')
-                    listener.stop()
-                    listener = None
+                    if listener is None:
+                        msg = "Error: no active server connection"
+                    else:
+                        listener.stop()
+                        listener = None
                 elif request.form['type'] == 'sender':
-                    print('disconnecting sender')
-                    sender.stop()
-                    sender = None
+                    if sender is None:
+                        msg = "Error: no active server"
+                    else:
+                        sender.stop()
+                        sender = None
                 else:
                     msg = 'Not a valid type'
             else:
                 msg = 'Not a valid action'
         
         if msg is None:
+            # Successful request
             return render_template('connections.html',
                 zsender=sender,
                 zlistener=listener,
@@ -98,9 +117,7 @@ def connections():
                 errormsg=msg)
 
     else:
-        #if sender is None:
-        #    sender = zWorker(zWorker.SENDER)
-        
+        # this is just a GET for the page
         return render_template('connections.html',
             zsender=sender,
             zlistener=listener,
@@ -110,8 +127,7 @@ def connections():
 @app.route('/nodes', methods=['GET'])
 def nodes():
     """
-    Details on known nodes, ability to add new node
-    view node if 
+    Address book. Add new node. Edit node. Delete node?
     
     """
     global friends
@@ -167,23 +183,46 @@ def getNodes():
     """
     GET:
     Returns list of known nodes
+        {
+            "starmaid.us.to": {
+                "hostname": "starmaid.us.to",
+                "port": 6000
+            },
+            ...
+        }
 
     POST:
     Called from a submission box. user has uploaded a key
     Save this file as a new server or client or whatever
-    update config to keep track of it?
+    update config and save file.
+        form = {
+            "hostname": "mimi.com",
+            "port": "9000"
+        }
+        files = {
+            "key": [public key]
+        }
+    
+
     """
     global friends
+
     if request.method == 'POST':
         if 'hostname' in request.form.keys() and 'port' in request.form.keys():
+            # TODO handle changing the hostname and updating records,
+            # instead of just creating a new user if hostname isnt in friends
+            
             nHostname = request.form['hostname']
             nPortStr = request.form['port']
 
             try:
                 nPort = int(nPortStr)
             except:
-                print('not a port')
-                return render_template('nodes.html',friends=friends, error='bad hostname',hostname=nHostname,port=nPortStr)
+                return render_template('nodes.html',
+                            friends=friends, 
+                            error='bad port',
+                            hostname=nHostname,
+                            port=nPortStr)
 
             if nHostname in friends.keys():
                 friends[nHostname]['port'] = nPort
@@ -195,16 +234,25 @@ def getNodes():
 
             didsave = saveFriends(friends)
             if not didsave:
-                print('error saving friends json')
+                return render_template('nodes.html',
+                            friends=friends, 
+                            error='error saving friends json',
+                            hostname=nHostname,
+                            port=nPortStr)
 
             if 'key' in request.files.keys() and request.files['key'].filename != '':
                 newfile = request.files['key']
-                print(newfile.filename)
 
+                # now lets do a bunch of checks on the file...
                 if newfile.filename.split('.')[-1] != 'key':
-                    print('wrong extension IDIOT!!!!')
-                    return render_template('nodes.html',friends=friends, error='bad file extension',hostname=nHostname,port=nPortStr)
+                    return render_template('nodes.html',
+                                friends=friends, 
+                                error='bad file extension',
+                                hostname=nHostname,
+                                port=nPortStr)
 
+                # TODO There has got to be a better way to find filesize without reading it
+                # newfile.content_length ?
                 fcontent = newfile.read()
                 try:
                     fcontd = fcontent.decode('ascii')
@@ -213,26 +261,36 @@ def getNodes():
                 
                 print(len(fcontd))
                 if len(fcontd) > 400:
-                    print('file too dang long')
+                    return render_template('nodes.html',
+                                friends=friends, 
+                                error='file too large to be a pubkey',
+                                hostname=nHostname,
+                                port=nPortStr)
                 
                 if 'public-key' not in fcontd:
-                    print('not a public-key')
+                    return render_template('nodes.html',
+                                friends=friends, 
+                                error='file does not contain key',
+                                hostname=nHostname,
+                                port=nPortStr)
                 
-                print(fcontd)
-
                 newpath = os.path.join(app.root_path,
                     os.path.normpath(f'./data/friends/{nHostname}.key'))
                 
                 with open(newpath,'w') as f:
+                    # Sanitize CR out
                     f.write(fcontd.replace('\r',''))
 
+            # return a view of the page with the name they just edited
             return redirect(url_for('nodes',view=nHostname))
         else:
             return
     else:
+        # just send the JSON over
         return friends
-        
-# ============== get and set data ===================
+
+
+# USER API: For the user's program to interact with ===========================
 
 @app.route('/getdata', methods=['GET'])
 def getdata():
@@ -298,16 +356,7 @@ def setdata():
         return 'Endpoint only accepts POST'
 
 
-# this ones for fun teehee
-
-@app.route('/nitw')
-def nitw():
-    path = os.path.normpath("C:\\Users\\star-tower\\Pictures\\new nitw.png")
-    return send_file(path, as_attachment=False)
-
-
-
-# ============ NON PAGE HELPERS ===========
+# NON-PAGE HELPERS: do other tasks in the program =============================
 
 def loadConfig():
     with open('./app/data/config.json', 'r') as c:
@@ -339,6 +388,8 @@ def saveFriends(friends):
             return None
     return friends
 
+
+
 if __name__ == '__main__':
     # Load config
 
@@ -350,4 +401,5 @@ if __name__ == '__main__':
         if config['debug']:
             app.run(debug=True, port=config['flaskport'])
         else:
+            # This is the 'production' WSGI server
             serve(app, port=config['flaskport'])
