@@ -1,13 +1,23 @@
-import zmq
-import zmq.auth
-from zmq.auth.thread import ThreadAuthenticator
+# net.py
+# This file manages network connections.
+
 import time
 import threading
 import json
 import os
 import hashlib
 
+import zmq
+import zmq.auth
+from zmq.auth.thread import ThreadAuthenticator
+
+
 class zWorker():
+    """
+    ZMQ Networker. This class can be instantiated as a
+    listener or a sender. Handles keeping the connection alive
+    in a thread, and automatically polls/updates.
+    """
 
     SENDER = 0
     LISTENER = 1
@@ -17,6 +27,7 @@ class zWorker():
         self.ctx = None
         self.data = None
         self.header = {}
+
         if datadir is None:
             self.datadir = os.path.dirname(__file__)
         else:
@@ -24,7 +35,11 @@ class zWorker():
         pass
 
     def start(self, port=None, host=None) -> bool:
-        """starts in whichever mode was selected"""
+        """
+        Starts in whichever mode was selected.
+        This involves setting claims to ports, managing keys and directories,
+        and starting the main loops for each type of connection.
+        """
         if self.mode == self.SENDER:
             # Server mode (REP)
             # needs to know the directory of certs
@@ -115,23 +130,25 @@ class zWorker():
         return True
 
     def stop(self) -> bool:
+        """
+        Immediately terminate the connection.
+        Theoretically, the connection could be started up again.
+        This may make sense in cases wehre the server momentarily goes down
+        and the client wants to reconnect. 
+        """
         if self.sock is None:
             return False
         
+        # FIXME currently not thread safe. 
+        # https://github.com/starmaid/netkiss/issues/1
         self.ctx.destroy(linger=0)
         self.sock = None
 
         return True
 
     def getData(self) -> str:
+        """Return stored data from the listener in JSON format"""
         if self.mode == self.LISTENER:
-            '''
-            self.header['id'] = hashlib.md5(self.data.encode()).hexdigest()
-            self.header['time'] = time.time()
-            self.header['chain'] = chain
-            self.header['type'] = dtype
-            self.header['b64encoded'] = encoded
-            '''
             return {'connected': True,
                     'type': self.header['type'],
                     'b64encoded': self.header['b64encoded'],
@@ -141,6 +158,11 @@ class zWorker():
             return None
 
     def setData(self, data, dtype, chain, encoded) -> bool:
+        """Set data to be sent by the sender"""
+
+        # TODO: Implement and check for a max file size
+        # maybe do that on the web api side?
+
         if self.mode == self.SENDER:
             self.data = data
             self.header['id'] = hashlib.md5(self.data.encode()).hexdigest()
@@ -153,6 +175,11 @@ class zWorker():
             return False
 
     def serverLoop(self):
+        """
+        Loop to run forever for the server (sender).
+        The server periodically refreshes what data is being served
+        based on input from setData()
+        """
         while self.sock is not None:
             print('serverloop start')
             try:
@@ -186,6 +213,11 @@ class zWorker():
                 break
         return True
     
+    # TODO: I dont know why I made these little methods.
+    # Either find a use for them or get rid of them. 
+    # I think they were to minimize traffic if a big file was
+    # being sent. But I'm not using them.
+
     def clientPing(self) -> float:
         rep = self.clientRequest(['ping'])
         return float(rep['ping'])
@@ -199,6 +231,9 @@ class zWorker():
         return rep
 
     def clientRequest(self, fields=[]):
+        """
+        Generically poll some data from the server
+        """
         req = {}
         for f in fields:
             req[f] = True 
@@ -220,6 +255,10 @@ class zWorker():
         return rep
 
     def clientLoop(self):
+        """
+        Loop that runs forever as a client (Listener)
+        Periodically updates the data availible in getData()
+        """
         while self.sock is not None:
             print('in clientloop')
             rep = self.clientRequest(['ping','header','body'])
@@ -228,5 +267,7 @@ class zWorker():
                 self.data = rep['body']
                 print(self.data)
             print('clientloop 5')
+
+            # TODO: parameterize this sleep in the app config file
             time.sleep(5)
 
