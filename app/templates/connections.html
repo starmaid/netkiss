@@ -8,7 +8,7 @@
 <div class="textcontainer">
   {% if zlistener is none %}
   <p>Select a server player to recieve data from.</p>
-  <form action="http://localhost/connections" method="post">
+  <form action="{{ url_for('connections') }}" method="post">
     <input type="hidden" id="type" name="type" value="listener">
     <input type="hidden" id="type" name="action" value="connect">
     <select name="hostname" />
@@ -19,7 +19,7 @@
   </form>
   {% else %}
   <p>Currently connected to {{ zlistener }}</p>
-  <form action="http://localhost/connections" method="post">
+  <form action="{{ url_for('connections') }}" method="post">
     <input type="hidden" id="type" name="type" value="listener">
     <input type="hidden" id="type" name="action" value="disconnect">
     <input type="submit" value="Disconnect" />
@@ -37,14 +37,14 @@
   {% if zsender is none %}
   <p>Click to enable server.</p>
   <p>You do not control who connects as your client player.</p>
-  <form action="http://localhost/connections" method="post">
+  <form action="{{ url_for('connections') }}" method="post">
     <input type="hidden" id="type" name="type" value="sender">
     <input type="hidden" id="type" name="action" value="connect">
     <input type="submit" value="Start Server" />
   </form>
   {% else %}
   <p>Currently connected to {{ zsender }}</p>
-  <form action="http://localhost/connections" method="post">
+  <form action="{{ url_for('connections') }}" method="post">
     <input type="hidden" id="type" name="type" value="sender">
     <input type="hidden" id="type" name="action" value="disconnect">
     <input type="submit" value="Disconnect" />
