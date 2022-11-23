@@ -26,7 +26,9 @@ class zWorker():
         self.mode = mode
         self.ctx = None
         self.data = None
-        self.header = {}
+        self.header = { 'type': None, 
+                        'b64encoded': None,
+                        'chain': []}
 
         if datadir is None:
             self.datadir = os.path.dirname(__file__)
@@ -162,7 +164,7 @@ class zWorker():
 
         # TODO: Implement and check for a max file size
         # maybe do that on the web api side?
-
+        print(' '.join([str(v) for v in [data, dtype, chain, encoded]]))
         if self.mode == self.SENDER:
             self.data = data
             self.header['id'] = hashlib.md5(self.data.encode()).hexdigest()
@@ -207,6 +209,7 @@ class zWorker():
                 if 'body' in req.keys() and req['body']:
                     rep['body'] = self.data
             try:
+                print(rep)
                 self.sock.send_string(json.dumps(rep))
             except:
                 print('server could not send response')

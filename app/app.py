@@ -26,6 +26,7 @@ def index():
     if listener is not None:
         # we have some data to preview
         d = listener.getData()
+        print(d)
         if d['type'] == 'txt':
             text = d['data'] 
         # TODO handle and implement more types of data
@@ -296,6 +297,7 @@ def getNodes():
 def getdata():
     global listener
     if listener is None:
+        # Theres no listener, so whatever.
         d = {'connected': False}
     else:
         d = listener.getData()
@@ -305,11 +307,12 @@ def getdata():
 @app.route('/setdata', methods=['POST'])
 def setdata():
     if request.method == 'POST':
+        #print(request.form)
         try:
-            r = json.loads(request.data.decode())
-        except json.JSONDecodeError:
-            data = request.data.decode()
-            r = None
+            r = request.form.to_dict()
+        except:
+            data = request.form
+            r = str(request.values)
 
         print(r)
         if r is not None:
@@ -348,6 +351,7 @@ def setdata():
             else:
                 chain = [config['hostname']]
 
+            print(' '.join([str(v) for v in [data, dtype, chain, encoded]]))
             success = sender.setData(data, dtype, chain, encoded)
             d = {'connected': success}
         
