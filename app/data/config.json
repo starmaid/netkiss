@@ -1,6 +1,6 @@
 {
-    "hostname": "starmaid.us.to",
-    "zmqservport": 6000,
+    "hostname": "example.com",
+    "zmqservport": 6009,
     "flaskport": 80,
     "debug": true
 }
