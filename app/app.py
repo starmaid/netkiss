@@ -3,6 +3,7 @@
 
 import json
 import os
+import subprocess
 
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from waitress import serve
@@ -166,8 +167,10 @@ def info():
     """
     Version, your own pubkey, and other info
     """
+    global version
+
     return render_template('info.html',
-        version='0.0.0',
+        version=version,
         hostname=config['hostname'],
         port=config['zmqservport']
         )
@@ -399,6 +402,7 @@ if __name__ == '__main__':
 
     config = loadConfig()
     friends = loadFriends()
+    version = subprocess.check_output("git describe --tags", shell=True).decode().strip()
 
     # start web server
     if config is not None and friends is not None:
