@@ -402,7 +402,7 @@ if __name__ == '__main__':
 
     config = loadConfig()
     friends = loadFriends()
-    version = subprocess.check_output("git describe --tags", shell=True).decode().strip()
+    version = subprocess.check_output("git describe --tags", shell=True).decode().strip().split('-')[0]
 
     # start web server
     if config is not None and friends is not None:
